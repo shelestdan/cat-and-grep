@@ -49,6 +49,7 @@ int main(int argc, char *argv[])
                     exit(0);
             }
         }
+
         while (optind < argc)
         {
             int fileArg = optind;
@@ -158,6 +159,112 @@ int main(int argc, char *argv[])
             fclose(fileop);
             optind++;
         }
+
+        int fileArg = optind;
+        FILE *fileop;
+
+        if ((fileop = fopen(argv[fileArg], "r")) == NULL) {
+            perror("File enum");
+            exit(0);
+        }
+
+        char symbol;
+        char old_symbol = '0';
+        int numb_symbol = 1;
+        int new_str = 0;
+        int s_test = 0;
+        int t_test = 0;
+        int v_test = 0;
+        int num = 1;
+
+        while ((symbol = getc(fileop)) != EOF) {
+            if (symbol == '\n') {
+                new_str = new_str + 1;
+            }
+            if (s_flag) {
+                if (new_str == 1 && numb_symbol == 1) {
+                    new_str = 2;
+                    s_test = 1;
+                }
+                if (new_str < 3) {
+                    s_test = 1;
+                    if (symbol != '\n') new_str = 0;
+                } else if (symbol != '\n') {
+                    new_str = 0;
+                    s_test = 1;
+                }
+            }
+            if (n_flag && !b_flag) {
+                if ((old_symbol == '\n' || numb_symbol == 1) && !s_flag) {
+                    printf("%6.d\t", num);
+                    num++;
+                } else if (s_flag && (old_symbol == '\n' || numb_symbol == 1)) {
+                    if (s_test) {
+                        printf("%6.d\t", num);
+                        num++;
+                    }
+                }
+            }
+            if (b_flag) {
+                if (!s_flag && (numb_symbol == 1 || old_symbol == '\n') && symbol != '\n') {
+                    printf("%6.d\t", num);
+                    num++;
+                }
+                if (s_flag && (old_symbol == '\n' || numb_symbol == 1)) {
+                    if (symbol != '\n' && s_test) {
+                        printf("%6.d\t", num);
+                        num++;
+                    }
+                }
+            }
+            if (e_flag) {
+                if (!s_flag && symbol == '\n') {
+                    printf("$");
+                } else if (s_test && symbol == '\n') {
+                    printf("$");
+                }
+            }
+
+            if (t_flag) {
+                if (symbol == 9) t_test = 1;
+            }
+
+            if (v_flag) {
+                if (symbol >= 0 && symbol != 9 && symbol != 10 && symbol < 32) {
+                    printf("^%c", symbol + 64);
+                    v_test = 1;
+                } else if (symbol == 127) {
+                    printf("^?");
+                    v_test = 1;
+                }
+            }
+
+            if (s_flag && s_test) {
+                if (t_test) {
+                    printf("^I");
+                    s_test = 0;
+                    t_test = 0;
+                } else if (v_test) {
+                    v_test = 0;
+                } else {
+                    printf("%c", symbol);
+                    s_test = 0;
+                }
+            } else if (!s_flag) {
+                if (t_test) {
+                    printf("^");
+                    printf("I");
+                    t_test = 0;
+                } else if (v_test) {
+                    v_test = 0;
+                } else {
+                    printf("%c", symbol);
+                }
+            }
+            old_symbol = symbol;
+            numb_symbol++;
+        }
+        fclose(fileop);
     }
     return 0;
 }
