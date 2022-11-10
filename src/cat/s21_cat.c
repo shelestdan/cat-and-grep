@@ -56,10 +56,6 @@ int main(int argc, char *argv[]) {
     }
   }
 }
-//void read_file(char *argv[], int argc, int optind) {
-//
-//  }
-//}
 
 void flag_start(char symbol) {
   if (symbol == '\n') {

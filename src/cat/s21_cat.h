@@ -1,5 +1,6 @@
 #ifndef SRC_S21_CAT_H
 #define SRC_S21_CAT_H
+#define _GNU_SOURCE
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -8,7 +9,6 @@
 #include <unistd.h>
 
 void opt(char fell, int argc);
-void read_file(char *argv[], int argc, int optind);
 void flag_start(char symbol);
 
 static struct option long_options[] = {
