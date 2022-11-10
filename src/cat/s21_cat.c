@@ -36,30 +36,30 @@ void opt(char fell, int argc) {
         t_flag++;
         v_flag++;
         break;
-        case '?':
+      case '?':
       default:
         exit(0);
     }
   }
 }
 
-void read_file(int argc, char** argv, int optind) {
-    while (optind < argc) {
+void read_file(int argc, char **argv, int optind) {
+  while (optind < argc) {
     FILE *fileop;
     int fileArg = optind;
-        if ((fileop = fopen(argv[fileArg], "r")) == NULL) {
-            perror("File enum");
-            exit(0);
-        }
-        while ((symbol = getc(fileop)) != EOF) {
-            flag_start(symbol);
-            old_symbol = symbol;
-            numb_symbol++;
-        }
-        optind++;
-        fclose(fileop);
-        num = 1;
+    if ((fileop = fopen(argv[fileArg], "r")) == NULL) {
+      perror("File enum");
+      exit(0);
     }
+    while ((symbol = getc(fileop)) != EOF) {
+      flag_start(symbol);
+      old_symbol = symbol;
+      numb_symbol++;
+    }
+    optind++;
+    fclose(fileop);
+    num = 1;
+  }
 }
 
 void flag_start(char symbol) {
