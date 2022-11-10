@@ -9,6 +9,7 @@
 #include <unistd.h>
 
 void opt(char fell, int argc);
+void read_file(int argc, char** argv, int optind);
 void flag_start(char symbol);
 
 static struct option long_options[] = {

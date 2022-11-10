@@ -1,31 +1,16 @@
 #include "s21_cat.h"
 
 int main(int argc, char *argv[]) {
-  while (testing == 0 && (fell = getopt_long(argc, argv, "+ETtensbv",
+  while (testing == 0 && (fell = getopt_long(argc, argv, "+ETtensbv?",
                                              long_options, NULL)) != EOF) {
     opt(fell, argc);
   }
-  while (optind < argc) {
-      FILE *fileop;
-      int fileArg = optind;
-      if ((fileop = fopen(argv[fileArg], "r")) == NULL) {
-          perror("File enum");
-          exit(0);
-      }
-    while ((symbol = getc(fileop)) != EOF) {
-      flag_start(symbol);
-      old_symbol = symbol;
-      numb_symbol++;
-    }
-    num = 1;
-    fclose(fileop);
-    optind++;
-  }
+  read_file(argc, argv, optind);
   return 0;
 }
 
-  void opt(char fell, int argc) {
-      if (argc != 1) {
+void opt(char fell, int argc) {
+  if (argc != 1) {
     switch (fell) {
       case 'b':
         b_flag = (n_flag = 0) + 1;
@@ -51,10 +36,30 @@ int main(int argc, char *argv[]) {
         t_flag++;
         v_flag++;
         break;
+        case '?':
       default:
         exit(0);
     }
   }
+}
+
+void read_file(int argc, char** argv, int optind) {
+    while (optind < argc) {
+    FILE *fileop;
+    int fileArg = optind;
+        if ((fileop = fopen(argv[fileArg], "r")) == NULL) {
+            perror("File enum");
+            exit(0);
+        }
+        while ((symbol = getc(fileop)) != EOF) {
+            flag_start(symbol);
+            old_symbol = symbol;
+            numb_symbol++;
+        }
+        optind++;
+        fclose(fileop);
+        num = 1;
+    }
 }
 
 void flag_start(char symbol) {

@@ -1,122 +1,144 @@
-#include <getopt.h>
-#include <stdio.h>
-#include <stdlib.h>
-
-#include "functions_cat.c"
-#include "functions_cat.h"
-#include "output.c"
-#include "output.h"
-
-struct flags {
-    int flag_b;
-    int flag_s;
-    int flag_n;
-    int flag_e;
-    int flag_t;
-    int flag_v;
-};
-struct flags flagsCat = {0};
-struct flags *p_flags = &flagsCat;
-static struct option long_options[] = {
-        {"number-nonblank", 0, 0, 'b'},
-        {"number", 0, 0, 'n'},
-        {"squeeze-blank)", 0, 0, 's'},
-};
+#include "s21_cat.h"
 
 int main(int argc, char *argv[]) {
-    int val;
-    int test = 0;
-
-    if (argc != 1) {
-        while (test == 0 && (val = getopt_long(argc, argv, "+ETtensbv",
+    while (testing == 0 && (fell = getopt_long(argc, argv, "+ETtensbv",
                                                long_options, NULL)) != EOF) {
-            switch (val) {
-                case 'b':
-                    p_flags->flag_b++;
-                    p_flags->flag_b = (p_flags->flag_n = 0) + 1;
-                    break;
-                case 'e':
-                case 'E':
-                    p_flags->flag_e++;
-                    p_flags->flag_v++;
-                    break;
-                case 'n':
-                    p_flags->flag_n++;
-                    p_flags->flag_n = p_flags->flag_b ? 0 : 1;
-                    break;
-                case 's':
-                    p_flags->flag_s++;
-                    break;
-                case 'v':
-                    p_flags->flag_v++;
-                    break;
-                case 'T':
-                case 't':
-                    p_flags->flag_t++;
-                    p_flags->flag_v++;
-                    break;
-                default:
-                    exit(0);
-                    break;
-            }
-        }
+        opt(fell, argc);
     }
-    // на каком арументе в массиве записан файл
     while (optind < argc) {
-        int argFile = optind;
-        FILE *fp;
-
-        // Проверка на сущетсвование файла
-        if ((fp = fopen(argv[argFile], "r")) == NULL) {
-            perror("Error file");
+        FILE *fileop;
+        int fileArg = optind;
+        if ((fileop = fopen(argv[fileArg], "r")) == NULL) {
+            perror("File enum");
             exit(0);
         }
-
-        char simb;
-        char oldSimb = '0';
-        int string_new = 0;
-        int numberSimbol = 1;
-        int examS = 0;
-        int examT = 0;
-        int examV = 0;
-        int number = 1;
-
-        while ((simb = getc(fp)) != EOF) {
-            // Смотрим, есть ли смвол переноса строки
-            if (simb == '\n') string_new = string_new + 1;
-
-            // отработка флага S
-            if (flagsCat.flag_s) {
-                funcFlagS(&examS, &string_new, simb, numberSimbol);
-            }
-            // отработка флага N
-            if (flagsCat.flag_n && !flagsCat.flag_b) {
-                funcFlagN(numberSimbol, flagsCat.flag_s, &number, examS, oldSimb);
-            }
-            // отработка флага B
-            if (flagsCat.flag_b) {
-                funcFlagB(numberSimbol, flagsCat.flag_s, &number, examS, oldSimb, simb);
-            }
-            // отработка флага E
-            if (flagsCat.flag_e) {
-                funcFlagE(flagsCat.flag_s, simb, examS);
-            }
-            // отработка флага t
-            if (flagsCat.flag_t) {
-                funcFlagT(simb, &examT);
-            }
-            // отработка флага V
-            if (flagsCat.flag_v) {
-                funcFlagV(simb, &examV);
-            }
-            // ВЫВОД В КОНСОЛЬ
-            outputFuncCat(flagsCat.flag_s, &examS, &examV, &examT, simb);
-            // взаимодействие с символами и строками
-            oldSimb = simb;
-            numberSimbol++;
+        while ((symbol = getc(fileop)) != EOF) {
+            flag_start(symbol);
+            old_symbol = symbol;
+            numb_symbol++;
         }
-        fclose(fp);
+        num = 1;
+        fclose(fileop);
         optind++;
     }
     return 0;
+}
+
+void opt(char fell, int argc) {
+    if (argc != 1) {
+        switch (fell) {
+            case 'b':
+                b_flag = (n_flag = 0) + 1;
+                b_flag++;
+                break;
+            case 'e':
+            case 'E':
+                v_flag++;
+                e_flag++;
+                break;
+            case 'n':
+                n_flag = b_flag ? 0 : 1;
+                n_flag++;
+                break;
+            case 's':
+                s_flag++;
+                break;
+            case 'v':
+                v_flag++;
+                break;
+            case 'T':
+            case 't':
+                t_flag++;
+                v_flag++;
+                break;
+            default:
+                exit(0);
+        }
+    }
+}
+
+void flag_start(char symbol) {
+    if (symbol == '\n') {
+        new_str = new_str + 1;
+    }
+    if (s_flag) {
+        if (new_str == 1 && numb_symbol == 1) {
+            new_str = 2;
+            s_test = 1;
+        }
+        if (new_str < 3) {
+            s_test = 1;
+            if (symbol != '\n') new_str = 0;
+        } else if (symbol != '\n') {
+            new_str = 0;
+            s_test = 1;
+        }
+    }
+    if (n_flag && !b_flag) {
+        if ((old_symbol == '\n' || numb_symbol == 1) && !s_flag) {
+            printf("%6.d\t", num);
+            num++;
+        } else if (s_flag && (old_symbol == '\n' || numb_symbol == 1)) {
+            if (s_test) {
+                printf("%6.d\t", num);
+                num++;
+            }
+        }
+    }
+    if (b_flag) {
+        if (!s_flag && (numb_symbol == 1 || old_symbol == '\n') && symbol != '\n') {
+            printf("%6.d\t", num);
+            num++;
+        }
+        if (s_flag && (old_symbol == '\n' || numb_symbol == 1)) {
+            if (symbol != '\n' && s_test) {
+                printf("%6.d\t", num);
+                num++;
+            }
+        }
+    }
+    if (e_flag) {
+        if (!s_flag && symbol == '\n') {
+            printf("$");
+        } else if (s_test && symbol == '\n') {
+            printf("$");
+        }
+    }
+
+    if (t_flag) {
+        if (symbol == 9) t_test = 1;
+    }
+
+    if (v_flag) {
+        if (symbol >= 0 && symbol != 9 && symbol != 10 && symbol < 32) {
+            printf("^%c", symbol + 64);
+            v_test = 1;
+        } else if (symbol == 127) {
+            printf("^?");
+            v_test = 1;
+        }
+    }
+
+    if (s_flag && s_test) {
+        if (t_test) {
+            printf("^I");
+            s_test = 0;
+            t_test = 0;
+        } else if (v_test) {
+            v_test = 0;
+        } else {
+            printf("%c", symbol);
+            s_test = 0;
+        }
+    } else if (!s_flag) {
+        if (t_test) {
+            printf("^");
+            printf("I");
+            t_test = 0;
+        } else if (v_test) {
+            v_test = 0;
+        } else {
+            printf("%c", symbol);
+        }
+    }
 }
