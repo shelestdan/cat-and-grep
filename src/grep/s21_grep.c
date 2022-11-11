@@ -66,15 +66,16 @@ void Read_file(char **argv, int argc, int optind) {
 }
 
 void pattern(char **argv) {
-    char buffer[5000] = {0};
+    char buffer[7000] = {0};
     if (!flag_e && !flag_f) {
-        sprintf(patt, sizeof(patt), "%s", argv[optind]);
+        snprintf(patt, sizeof(patt), "%s", argv[optind]);
         optind++;
     }
     if (flag_e && !flag_f) {
-        if (patt[0] == 0) sprintf(patt, sizeof(patt), "%s", optarg);
-        else {
-            sprintf(buffer, sizeof(patt), "|%s0", optarg);
+        if (patt[0] == 0) {
+            snprintf(patt, sizeof(patt), "%s", optarg);
+        } else {
+            snprintf(buffer, sizeof(patt), "|%s", optarg);
             strcat(patt, buffer);
         }
     }
@@ -83,9 +84,9 @@ void pattern(char **argv) {
         FILE *fileop_f;
         char *p = optarg;
         char line_f[1000] = {0};
-        if (p != 0) {
+        if (p != NULL) {
             if ((fileop_f = fopen(p, "r"))) {
-                while ((fgets(line_f, 1000, fileop_f)) != 0) {
+                while ((fgets(line_f, 1000, fileop_f)) != NULL) {
                     if (line_f[strlen(line_f) - 1] == 10) {
                         line_f[strlen(line_f) - 1] = 0;
                     }
@@ -109,6 +110,7 @@ void pattern(char **argv) {
 
 void kolizz(FILE *fileop, int argc, char *p) {
     int reg_c;
+    int re_ez;
     int c_line = 0;
     int complete = 0;
     int complete_c = 0;
@@ -118,7 +120,7 @@ void kolizz(FILE *fileop, int argc, char *p) {
     size_t n_mat = 4;
     regmatch_t p_mat[4];
 
-    if(flag_i && !flag_e) {
+    if (flag_i && !flag_e) {
         if ((reg_c = regcomp(&regex, patt, REG_ICASE)) != 0) {
             printf("Failed", reg_c);
             exit(1);
@@ -130,38 +132,42 @@ void kolizz(FILE *fileop, int argc, char *p) {
         }
     }
 
-    t_line = (char*)malloc(line + 1);
+    t_line = (char *) malloc(line + 1);
     if (t_line == NULL) exit(1);
-
-    if (t_line[strlen(t_line) - 1] == 10) {
-        (t_line[strlen(t_line) - 1] = 0);
-    }
-    if (complete == 0) {
-        if (!flag_v && !flag_c && !flag_l) {
+    while ((re_ez = getline(&t_line, &line, fileop)) != EOF) {
+        if ((complete = regexec(&regex, t_line, n_mat, p_mat, 0)) == 0) {
+            complete_c++;
+        }
+        if (t_line[strlen(t_line) - 1] == 10) {
+            (t_line[strlen(t_line) - 1] = 0);
+        }
+        if (complete == 0) {
+            if (!flag_v && !flag_c && !flag_l) {
+                if ((argc - optind) > 1 && !flag_h) {
+                    printf("%s:", p);
+                }
+                if (flag_n) {
+                    printf("%d: ", c_line + 1);
+                }
+                printf("%s\n", t_line);
+            }
+        }
+        if (flag_v && complete) {
             if ((argc - optind) > 1 && !flag_h) {
-                printf("%s:", p);
+                printf("%s:", t_line);
             }
-            if (flag_n) {
-                printf("%d: ", c_line + 1);
-            }
-            printf("%s", t_line);
+            printf("%s\n", t_line);
+        }
+        if (flag_f) {
+            printf("%s\n", t_line);
+        }
+        if (flag_l) { printf("%s\n", fileop); }
+        if (flag_c) {
+            printf("%d", complete);
         }
     }
-    if (complete && flag_v) {
-        if ((argc - optind) > 1 && !flag_h) {
-            printf("%s:", t_line);
+        if (t_line) {
+            free(t_line);
         }
-        printf("%s\n", t_line);
-    }
-    if (flag_f) {
-        printf("%s\n",t_line);
-    }
-    if (flag_l) { printf("%s\n", fileop); }
-    if (flag_c) {
-        printf("%d", complete);
-    }
-    if (t_line != NULL) {
-        free(t_line);
-    } else {}
-    regfree(&regex);
+        regfree(&regex);
 }
