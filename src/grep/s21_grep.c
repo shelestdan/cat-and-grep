@@ -1,4 +1,4 @@
-#include "s21_gper.h"
+#include "s21_grep.h"
 
 int main(int argc, char **argv) {
     int opt;
@@ -58,7 +58,7 @@ void Read_file(char **argv, int argc, int optind) {
                 kolizz(fileop, argc, names);
                 fclose(fileop);
             } else {
-                if (!flag_s) printf("Ошибка чтения", names);
+                if (!flag_s) printf("Ошибка чтения");
             }
         }
         o++;
@@ -71,12 +71,14 @@ void pattern(char **argv) {
         snprintf(patt, sizeof(patt), "%s", argv[optind]);
         optind++;
     }
-    if (flag_e && !flag_f) {
-        if (patt[0] == 0) {
-            snprintf(patt, sizeof(patt), "%s", optarg);
-        } else {
-            snprintf(buffer, sizeof(patt), "|%s", optarg);
-            strcat(patt, buffer);
+    if (flag_e) {
+        if (!flag_f) {
+            if (patt[0] == 0) {
+                snprintf(patt, sizeof(patt), "%s", optarg);
+            } else {
+                snprintf(buffer, sizeof(patt), "|%s", optarg);
+                strcat(patt, buffer);
+            }
         }
     }
     if(flag_f) {
@@ -93,20 +95,15 @@ void pattern(char **argv) {
                     if (patt[0] == 0) {
                         snprintf(patt, sizeof(patt), "%s", line_f);
                     } else {
-                        snprintf(patt, sizeof(patt), "|%s", line_f);
+                        snprintf(buffer, sizeof(patt), "|%s", line_f);
                         strcat(patt, buffer);
                     }
                     k++;
                 }
-            } else {
-                if (!flag_s) {
-                    printf("Ошибка чтения", p);
-                }
-            }
+            } else if (!flag_s) printf("Ошибка чтения");
         }
     }
 }
-
 
 void kolizz(FILE *fileop, int argc, char *p) {
     int reg_c;
@@ -122,52 +119,84 @@ void kolizz(FILE *fileop, int argc, char *p) {
 
     if (flag_i && !flag_e) {
         if ((reg_c = regcomp(&regex, patt, REG_ICASE)) != 0) {
-            printf("Failed", reg_c);
+            printf("failed, returning nonzero %d", reg_c);
             exit(1);
         }
     } else {
         if ((reg_c = regcomp(&regex, patt, REG_EXTENDED)) != 0) {
-            printf("Error!", reg_c);
+            printf("failed, returning nonzero %d", reg_c);
             exit(1);
         }
     }
-
     t_line = (char *) malloc(line + 1);
-    if (t_line == NULL) exit(1);
-    while ((re_ez = getline(&t_line, &line, fileop)) != EOF) {
-        if ((complete = regexec(&regex, t_line, n_mat, p_mat, 0)) == 0) {
-            complete_c++;
-        }
-        if (t_line[strlen(t_line) - 1] == 10) {
-            (t_line[strlen(t_line) - 1] = 0);
-        }
+    if (t_line == NULL) {
+        exit(1);
+    }
+    while (((re_ez = getline(&t_line, &line, fileop)) != EOF)) {
+        if ((complete = regexec(&regex, t_line, n_mat, p_mat, 0)) == 0) complete_c++;
+        if (t_line[strlen(t_line) - 1] == 10) (t_line[strlen(t_line) - 1] = 0);
         if (complete == 0) {
-            if (!flag_v && !flag_c && !flag_l) {
-                if ((argc - optind) > 1 && !flag_h) {
-                    printf("%s:", p);
-                }
-                if (flag_n) {
-                    printf("%d: ", c_line + 1);
-                }
+            if (!flag_v && !flag_c && !flag_l && !flag_o) {
+                if ((argc - optind) > 1 && !flag_h) printf("%s:", p);
+                if (flag_n) printf("%d:", c_line + 1);
                 printf("%s\n", t_line);
             }
         }
-        if (flag_v && complete) {
-            if ((argc - optind) > 1 && !flag_h) {
-                printf("%s:", t_line);
+        if (complete != 0 && flag_v) {
+            if (!flag_c && !flag_l && !flag_o) {
+                if ((argc - optind) > 1 && !flag_h) printf("%s:", p);
+                if (flag_n) printf("%d:", c_line + 1);
             }
             printf("%s\n", t_line);
         }
-        if (flag_f) {
-            printf("%s\n", t_line);
+        if (complete == 0 && flag_o) {
+            if (!flag_v && !flag_c && !flag_l) {
+                if ((argc - optind) > 1 && !flag_h) printf("%s:", p);
+                if (flag_n) printf("%d:", c_line + 1);
+            }
+            char *t_line_o = t_line;
+            for (unsigned int i = 0; i < strlen(t_line_o); i++) {
+                if (regexec(&regex, t_line_o, n_mat, p_mat, 0)) break;
+                unsigned int of = 0;
+                for (size_t k = 0; k <= n_mat; k++) {
+                    if (p_mat[k].rm_so == -1) break;
+                    if (k == 0) of = p_mat[k].rm_eo;
+                    char line_c[strlen(t_line_o) + 1];
+                    strcpy(line_c, t_line_o);
+                    line_c[p_mat[k].rm_eo] = 0;
+                printf("%s\n", (line_c + p_mat[k].rm_so));
+                }
+                t_line_o += of;
+            }
         }
-        if (flag_l) { printf("%s\n", fileop); }
-        if (flag_c) {
-            printf("%d", complete);
-        }
+        c_line++;
     }
-        if (t_line) {
-            free(t_line);
-        }
-        regfree(&regex);
+    if (!flag_v && flag_c && flag_l) {
+        if ((argc - optind) > 1 && !flag_h) printf("%s:", p);
+        printf("%d\n", complete_c);
+    }
+    if (flag_v && flag_c && !flag_l) {
+        if ((argc - optind) > 1 && !flag_h) printf("%s:", p);
+        printf("%d\n", (c_line - complete_c));
+    }
+    if (!flag_v && flag_c && flag_l) {
+        if ((argc - optind) > 1 && !flag_h) printf("%s:", p);
+        if (complete_c > 0) printf("%d\n", 1);
+        else printf("%d\n", 0);
+    }
+    if (flag_v && flag_c && flag_l) {
+        if ((argc - optind) > 1 && !flag_h) printf("%s:", p);
+        if (complete_c > 0) printf("%d\n", 1);
+        else printf("%d\n", 0);
+    }
+    if (flag_l && complete_c > 0) printf("%s\n", p);
+    if (flag_l && flag_v && complete_c == 0) printf("%s\n", p);
+    if (t_line) free(t_line);
+    regfree(&regex);
 }
+
+
+
+
+
+
