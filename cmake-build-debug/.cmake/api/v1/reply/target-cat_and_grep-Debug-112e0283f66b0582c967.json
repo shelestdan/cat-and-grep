@@ -2,7 +2,7 @@
 	"artifacts" : 
 	[
 		{
-			"path" : "C3_SimpleBashUtils_0"
+			"path" : "cat_and_grep"
 		}
 	],
 	"backtrace" : 1,
@@ -52,7 +52,7 @@
 			[
 				{
 					"backtrace" : 2,
-					"path" : "/Users/marnitic/marnitic/C3_SimpleBashUtils-0/src/cat"
+					"path" : "/Users/marnitic/cat-and-grep/src/cat"
 				}
 			],
 			"language" : "C",
@@ -70,7 +70,7 @@
 			]
 		}
 	],
-	"id" : "C3_SimpleBashUtils_0::@6890427a1f51a3e7e1df",
+	"id" : "cat_and_grep::@6890427a1f51a3e7e1df",
 	"link" : 
 	{
 		"commandFragments" : 
@@ -86,8 +86,8 @@
 		],
 		"language" : "C"
 	},
-	"name" : "C3_SimpleBashUtils_0",
-	"nameOnDisk" : "C3_SimpleBashUtils_0",
+	"name" : "cat_and_grep",
+	"nameOnDisk" : "cat_and_grep",
 	"paths" : 
 	{
 		"build" : ".",

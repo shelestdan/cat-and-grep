@@ -1,4 +1,4 @@
-# Install script for directory: /Users/marnitic/marnitic/C3_SimpleBashUtils-0
+# Install script for directory: /Users/marnitic/cat-and-grep
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -45,5 +45,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/Users/marnitic/marnitic/C3_SimpleBashUtils-0/cmake-build-debug/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/Users/marnitic/cat-and-grep/cmake-build-debug/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

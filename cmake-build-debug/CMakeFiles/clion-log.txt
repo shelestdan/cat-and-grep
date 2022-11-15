@@ -1,1 +1,4 @@
-CMakeLists.txt not found in /Users/marnitic/marnitic/C3_SimpleBashUtils-0 Select CMakeLists.txt
+/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/Applications/CLion.app/Contents/bin/ninja/mac/ninja -G Ninja /Users/marnitic/cat-and-grep
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /Users/marnitic/cat-and-grep/cmake-build-debug

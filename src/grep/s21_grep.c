@@ -8,6 +8,7 @@ int main(int argc, char **argv) {
   }
   pattern(argv);
   Read_file(argv, argc, optind);
+  return 0;
 }
 
 void Flags(char f, char **argv) {
@@ -38,7 +39,6 @@ void Flags(char f, char **argv) {
     flag_s++;
     break;
   case 'f':
-    flag_f++;
     pattern(argv);
     break;
   case 'o':
@@ -52,8 +52,7 @@ void Flags(char f, char **argv) {
 void Read_file(char **argv, int argc, int optind) {
   FILE *fileop;
   char *names;
-  int o = optind;
-  while ((names = argv[o]) != NULL) {
+  while ((names = argv[optind]) != NULL) {
     if (names != 0 || strcmp(names, "-") != 0) {
       if ((fileop = fopen(names, "r"))) {
         kolizz(fileop, argc, names);
@@ -63,7 +62,7 @@ void Read_file(char **argv, int argc, int optind) {
           printf("Ошибка чтения");
       }
     }
-    o++;
+    optind++;
   }
 }
 
@@ -109,32 +108,7 @@ void pattern(char **argv) {
 }
 
 void kolizz(FILE *fileop, int argc, char *p) {
-  int reg_c;
-  int re_ez;
-  int c_line = 0;
-  int complete = 0;
-  int complete_c = 0;
-  char *t_line = NULL;
-  regex_t regex;
-  size_t line = 1000;
-  size_t n_mat = 4;
-  regmatch_t p_mat[4];
-
-  if (flag_i && !flag_e) {
-    if ((reg_c = regcomp(&regex, patt, REG_ICASE)) != 0) {
-      printf("failed, returning nonzero %d", reg_c);
-      exit(1);
-    }
-  } else {
-    if ((reg_c = regcomp(&regex, patt, REG_EXTENDED)) != 0) {
-      printf("failed, returning nonzero %d", reg_c);
-      exit(1);
-    }
-  }
-  t_line = (char *)malloc(line + 1);
-  if (t_line == NULL) {
-    exit(1);
-  }
+  Reg_memory(); 
   while (((re_ez = getline(&t_line, &line, fileop)) != EOF)) {
     if ((complete = regexec(&regex, t_line, n_mat, p_mat, 0)) == 0)
       complete_c++;
@@ -149,64 +123,32 @@ void kolizz(FILE *fileop, int argc, char *p) {
         printf("%s\n", t_line);
       }
     }
-    if (complete != 0 && flag_v) {
-      if (!flag_c && !flag_l && !flag_o) {
-        if ((argc - optind) > 1 && !flag_h)
-          printf("%s:", p);
-        if (flag_n)
-          printf("%d:", c_line + 1);
-      }
-      printf("%s\n", t_line);
+    if (flag_v) {
+      Flag_V(argc, p);
     }
-    if (complete == 0 && flag_o) {
-      if (!flag_v && !flag_c && !flag_l) {
-        if ((argc - optind) > 1 && !flag_h)
-          printf("%s:", p);
-        if (flag_n)
-          printf("%d:", c_line + 1);
-      }
-      char *t_line_o = t_line;
-      for (unsigned int i = 0; i < strlen(t_line_o); i++) {
-        if (regexec(&regex, t_line_o, n_mat, p_mat, 0))
-          break;
-        unsigned int of = 0;
-        for (size_t k = 0; k <= n_mat; k++) {
-          if (p_mat[k].rm_so == -1)
-            break;
-          if (k == 0)
-            of = p_mat[k].rm_eo;
-          char line_c[strlen(t_line_o) + 1];
-          strcpy(line_c, t_line_o);
-          line_c[p_mat[k].rm_eo] = 0;
-          printf("%s\n", (line_c + p_mat[k].rm_so));
-        }
-        t_line_o += of;
-      }
+    if (flag_o) {
+      Flag_O(argc, p);
     }
     c_line++;
   }
-  if (!flag_v && flag_c && flag_l) {
-    if ((argc - optind) > 1 && !flag_h)
-      printf("%s:", p);
+  if (!flag_v && flag_c && !flag_l) {
+    No_Flag_H(argc, p);
     printf("%d\n", complete_c);
   }
   if (flag_v && flag_c && !flag_l) {
-    if ((argc - optind) > 1 && !flag_h)
-      printf("%s:", p);
+    No_Flag_H(argc, p);
     printf("%d\n", (c_line - complete_c));
   }
   if (!flag_v && flag_c && flag_l) {
-    if ((argc - optind) > 1 && !flag_h)
-      printf("%s:", p);
+    No_Flag_H(argc, p);
     if (complete_c > 0)
       printf("%d\n", 1);
     else
       printf("%d\n", 0);
   }
   if (flag_v && flag_c && flag_l) {
-    if ((argc - optind) > 1 && !flag_h)
-      printf("%s:", p);
-    if (complete_c > 0)
+    No_Flag_H(argc, p);
+    if ((c_line - complete_c) > 0)
       printf("%d\n", 1);
     else
       printf("%d\n", 0);
@@ -218,4 +160,61 @@ void kolizz(FILE *fileop, int argc, char *p) {
   if (t_line)
     free(t_line);
   regfree(&regex);
+}
+
+void Flag_V(int argc, char *p) {
+  if (complete != 0 && flag_v && !flag_c && !flag_l && !flag_o) {
+    No_Flag_H(argc, p);
+    if (flag_n)
+      printf("%d:", c_line + 1);
+    printf("%s\n", t_line);
+  }
+}
+
+void Flag_O(int argc, char *p) {
+  if (complete == 0 && flag_o && !flag_v && !flag_c && !flag_l) {
+    No_Flag_H(argc, p);
+    if (flag_n)
+      printf("%d:", c_line + 1);
+    char *t_line_o = t_line;
+    for (unsigned int i = 0; i < strlen(t_line_o); i++) {
+      if (regexec(&regex, t_line_o, n_mat, p_mat, 0))
+        break;
+      unsigned int of = 0;
+      for (size_t k = 0; k <= n_mat; k++) {
+        if (p_mat[k].rm_so == -1)
+          break;
+        if (k == 0)
+          of = p_mat[k].rm_eo;
+        char line_c[strlen(t_line_o) + 1];
+        strcpy(line_c, t_line_o);
+        line_c[p_mat[k].rm_eo] = 0;
+        printf("%s\n", (line_c + p_mat[k].rm_so));
+      }
+      t_line_o += of;
+    }
+  }
+}
+
+void No_Flag_H(int argc, char *p) {
+  if ((argc - optind) > 1 && !flag_h)
+    printf("%s:", p);
+}
+
+void Reg_memory() {
+  if (flag_i && !flag_e) {
+    if ((reg_c = regcomp(&regex, patt, REG_ICASE)) != 0) {
+      printf("failed %d", reg_c);
+      exit(1);
+    }
+  } else {
+    if ((reg_c = regcomp(&regex, patt, REG_EXTENDED)) != 0) {
+      printf("failed %d", reg_c);
+      exit(1);
+    }
+  }
+  t_line = (char *)malloc(line + 1);
+  if (t_line == NULL) {
+    exit(1);
+  }
 }

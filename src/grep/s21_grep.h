@@ -19,6 +19,22 @@ void Read_file(char **argv, int argc, int optind); //чтение файла
 void Flags(char f, char **argv);                   // выбор флага
 void pattern(char **argv);
 void kolizz(FILE *fileop, int argc, char *p); //функция отработки флагов
+void Flag_V(int argc, char *p);
+void Flag_O(int argc, char *p);
+void No_Flag_H(int argc, char *p);
+void Reg_memory();
+
+
+int reg_c;
+int re_ez;
+int c_line = 0;
+int complete = 0;
+int complete_c = 0;
+char *t_line = NULL;
+regex_t regex;
+size_t line = 1000;
+size_t n_mat = 4;
+regmatch_t p_mat[4];
 
 char patt[7000] = {0}; //буфер для шаблона
 int flag_e;            // Шаблон
@@ -33,4 +49,4 @@ int flag_s; // Подавляет сообщения об ошибках о не
 int flag_f; // Получает регулярные выражения из файла.
 int flag_o; // Печатает только совпадающие (непустые) части совпавшей строки.
 
-#endif // SRC_MYLIB_H_
+#endif // SRC_GREP_H_

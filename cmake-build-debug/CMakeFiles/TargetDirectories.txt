@@ -1,3 +1,3 @@
-/Users/marnitic/marnitic/C3_SimpleBashUtils-0/cmake-build-debug/CMakeFiles/rebuild_cache.dir
-/Users/marnitic/marnitic/C3_SimpleBashUtils-0/cmake-build-debug/CMakeFiles/edit_cache.dir
-/Users/marnitic/marnitic/C3_SimpleBashUtils-0/cmake-build-debug/CMakeFiles/C3_SimpleBashUtils_0.dir
+/Users/marnitic/cat-and-grep/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/Users/marnitic/cat-and-grep/cmake-build-debug/CMakeFiles/edit_cache.dir
+/Users/marnitic/cat-and-grep/cmake-build-debug/CMakeFiles/cat_and_grep.dir
