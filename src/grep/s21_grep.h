@@ -59,6 +59,4 @@ void Flag_O(int argc, char *p, options *flags, struct line_const);
 void No_Flag_H(int argc, char *p, options *flags);
 void Reg_memory(options *flags, struct line_const);
 
-//буфер для шаблона
-
 #endif // SRC_GREP_H_
