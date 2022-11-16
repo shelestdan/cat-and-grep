@@ -1,49 +1,50 @@
 #include "s21_grep.h"
 
 int main(int argc, char **argv) {
+  options flags = {0};
   int opt;
   while ((opt = getopt_long(argc, argv, short_options, long_options, NULL)) !=
          -1) {
-    Flags(opt, argv);
+    Flags(opt, argv, &flags);
   }
-  pattern(argv);
-  Read_file(argv, argc, optind);
+  pattern(argv, &flags);
+  Read_file(argv, argc, optind, &flags);
   return 0;
 }
 
-void Flags(char f, char **argv) {
+void Flags(char f, char **argv, options *flags) {
   switch (f) {
   case 'e':
-    flag_e++;
-    pattern(argv);
+    flags->flag_e = 1;
+    pattern(argv, flags);
     break;
   case 'i':
-    flag_i++;
+    flags->flag_i = 1;
     break;
   case 'v':
-    flag_v++;
+    flags->flag_v = 1;
     break;
   case 'c':
-    flag_c++;
+    flags->flag_c = 1;
     break;
   case 'l':
-    flag_l++;
+    flags->flag_l = 1;
     break;
   case 'n':
-    flag_n++;
+    flags->flag_n = 1;
     break;
   case 'h':
-    flag_h++;
+    flags->flag_h = 1;
     break;
   case 's':
-    flag_s++;
+    flags->flag_s = 1;
     break;
   case 'f':
-    flag_f++;
-    pattern(argv);
+    flags->flag_f = 1;
+    pattern(argv, flags);
     break;
   case 'o':
-    flag_o++;
+    flags->flag_o = 1;
     break;
   case '?':
     default:
@@ -52,21 +53,17 @@ void Flags(char f, char **argv) {
 }
 }
 
-void Read_file(char **argv, int argc, int optind) {
+void Read_file(char **argv, int argc, int optind, options *flags) {
   FILE *fileop;
   char *names;
   int i = optind;
   while ((names = argv[i]) != NULL) {
-    // printf("dddddd\n");
     if (names != 0 || strcmp(names, "-") != 0) {
-      // printf("aaaaaa\n");
       if ((fileop = fopen(names, "r"))) {
-        // printf("bbbbbb\n");
-        kolizz(fileop, argc, names);
-        // printf("ccccc1\n");
+        kolizz(fileop, argc, names, flags);
         fclose(fileop);
       } else {
-        if (!flag_s) {
+        if (!flags->flag_s) {
           perror("Ошибка чтения");
           exit(1);
         }
@@ -76,14 +73,13 @@ void Read_file(char **argv, int argc, int optind) {
   }
 }
 
-void pattern(char **argv) {
-  // printf("1111231\n");
+void pattern(char **argv, options *flags) {
   char buffer[9000] = {0};
-  if (!flag_e && !flag_f) {
+  if (!flags->flag_e && !flags->flag_f) {
     snprintf(patt, sizeof(patt), "%s", argv[optind]);
     optind++;
   }
-  if (flag_e && !flag_f) {
+  if (flags->flag_e && !flags->flag_f) {
       if (patt[0] == 0) {
         snprintf(patt, sizeof(patt), "%s", optarg);
       } else {
@@ -91,32 +87,25 @@ void pattern(char **argv) {
         strcat(patt, buffer);
       }
   }
-  if (flag_f) {
-    // printf("1111111111\n");
+  if (flags->flag_f) {
     FILE *fileop_f;
     char *p = optarg;
     char line_f[1010] = {0};
     if (p != NULL) {
-      // printf("2222\n");
       if ((fileop_f = fopen(p, "r"))) {
-        // printf("3333\n");
         while ((fgets(line_f, 1000, fileop_f)) != NULL) {
-          // printf("4444\n");
           if (line_f[strlen(line_f) - 1] == 10) {
-            // printf("5555\n");
             line_f[strlen(line_f) - 1] = 0;
           }
           if (patt[0] == 0) {
-            // printf("66666\n");
             snprintf(patt, sizeof(patt), "%s", line_f);
           } else {
-            // printf("7777\n");
             snprintf(buffer, sizeof(patt), "|%s", line_f);
             strcat(patt, buffer);
           }
         }
       } else {
-        if (!flag_s) {
+        if (!flags->flag_s) {
         perror("Ошибка чтения");
         exit(1);
       }
@@ -125,76 +114,76 @@ void pattern(char **argv) {
   }
 }
 
-void kolizz(FILE *fileop, int argc, char *p) {
+void kolizz(FILE *fileop, int argc, char *p, options *flags) {
  c_line = 0;
  complete = 0;
  complete_c = 0;
-  Reg_memory(); 
+  Reg_memory(flags); 
   while (((re_ez = getline(&t_line, &line, fileop)) != EOF)) {
     c_line++;
     if ((complete = regexec(&regex, t_line, n_mat, p_mat, 0)) == 0)
       complete_c++;
     if (t_line[strlen(t_line) - 1] == 10)
       (t_line[strlen(t_line) - 1] = 0);
-    if (complete == 0 && !flag_v && !flag_c && !flag_l && !flag_o) {
-        No_Flag_H(argc, p);
-        if (flag_n) {
+    if (complete == 0 && !flags->flag_v && !flags->flag_c && !flags->flag_l && !flags->flag_o) {
+        No_Flag_H(argc, p, flags);
+        if (flags->flag_n) {
           printf("%d:", c_line);
         }
       printf("%s\n", t_line);
     }
-    if (flag_v) {
-      Flag_V(argc, p);
+    if (flags->flag_v) {
+      Flag_V(argc, p, flags);
     }
-    if (flag_o) {
-      Flag_O(argc, p);
+    if (flags->flag_o) {
+      Flag_O(argc, p, flags);
     }
   }
-  if (!flag_v && flag_c && !flag_l) {
-    No_Flag_H(argc, p);
+  if (!flags->flag_v && flags->flag_c && !flags->flag_l) {
+    No_Flag_H(argc, p, flags);
     printf("%d\n", complete_c);
   }
-  if (flag_v && flag_c && !flag_l) {
-    No_Flag_H(argc, p);
+  if (flags->flag_v && flags->flag_c && !flags->flag_l) {
+    No_Flag_H(argc, p, flags);
    printf("%d\n", (c_line - complete_c));
   }
-  if (!flag_v && flag_c && flag_l) {
-    No_Flag_H(argc, p);
+  if (!flags->flag_v && flags->flag_c && flags->flag_l) {
+    No_Flag_H(argc, p, flags);
     if (complete_c > 0)
       printf("%d\n", 1);
     else
       printf("%d\n", 0);
   }
-  if (flag_v && flag_c && flag_l) {
-    No_Flag_H(argc, p);
+  if (flags->flag_v && flags->flag_c && flags->flag_l) {
+    No_Flag_H(argc, p, flags);
     if ((c_line - complete_c) > 0)
       printf("%d\n", 1);
     else
       printf("%d\n", 0);
   }
-  if (flag_l && complete_c > 0)
-    printf("%s\n", p);
-  if (flag_l && flag_v && complete_c == 0)
-    printf("%s\n", p);
+  if (flags->flag_l && complete_c > 0)
+    printf("%s\n", p, flags);
+  if (flags->flag_l && flags->flag_v && complete_c == 0)
+    printf("%s\n", p, flags);
   if (t_line)
     free(t_line);
   regfree(&regex);
 }
 
-void Flag_V(int argc, char *p) {
-  if (complete != 0 && flag_v && !flag_c && !flag_l) {
-    No_Flag_H(argc, p);
-    if (flag_n) {
+void Flag_V(int argc, char *p, options *flags) {
+  if (complete != 0 && flags->flag_v && !flags->flag_c && !flags->flag_l) {
+    No_Flag_H(argc, p, flags);
+    if (flags->flag_n) {
       printf("%d:", c_line);
     }
    printf("%s\n", t_line);
   }
 }
 
-void Flag_O(int argc, char *p) {
-  if (complete == 0 && flag_o && !flag_v && !flag_c && !flag_l) {
-    No_Flag_H(argc, p);
-    if (flag_n)
+void Flag_O(int argc, char *p, options *flags) {
+  if (complete == 0 && flags->flag_o && !flags->flag_v && !flags->flag_c && !flags->flag_l) {
+    No_Flag_H(argc, p, flags);
+    if (flags->flag_n)
       printf("%d:", c_line);
     char *t_line_o = t_line;
     for (unsigned int i = 0; i < strlen(t_line_o); i++) {
@@ -216,13 +205,13 @@ void Flag_O(int argc, char *p) {
   }
 }
 
-void No_Flag_H(int argc, char *p) {
-  if ((argc - optind) > 1 && !flag_h)
+void No_Flag_H(int argc, char *p, options *flags) {
+  if ((argc - optind) > 1 && !(flags -> flag_h))
     printf("%s:", p);
 }
 
-void Reg_memory() {
-  if (flag_i) {
+void Reg_memory(options *flags) {
+  if (flags->flag_i) {
     if ((reg_c = regcomp(&regex, patt, REG_ICASE)) != 0) {
       printf("failed %d", reg_c);
       exit(1);

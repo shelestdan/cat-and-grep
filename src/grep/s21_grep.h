@@ -8,19 +8,34 @@
 #include <getopt.h>
 #include <regex.h>
 
+typedef struct {
+    int flag_e; // Шаблон
+    int flag_i; // Игнорирует различия регистра.
+    int flag_v; // Инвертирует смысл поиска соответствий.
+    int flag_c; // Выводит только количество совпадающих строк.
+    int flag_l; // Выводит только совпадающие файлы.
+    int flag_n; // Предваряет каждую строку вывода номером строки из файла ввода.
+    int flag_h; // Выводит совпадающие строки, не предваряя их именами файлов.
+    int flag_s; // Подавляет сообщения об ошибках о несуществующих или нечитаемых
+                // файлах.
+    int flag_f; // Получает регулярные выражения из файла.
+    int flag_o; // Печатает только совпадающие (непустые) части совпавшей строки.
+} options;
+
 const char *short_options = "e:ivclnhsf:o?";
 static struct option long_options[] = {
     {NULL, 0, NULL, 0},
 };
 
-void Read_file(char **argv, int argc, int optind); //чтение файла
-void Flags(char f, char **argv);                   // выбор флага
-void pattern(char **argv);
-void kolizz(FILE *fileop, int argc, char *p); //функция отработки флагов
-void Flag_V(int argc, char *p);
-void Flag_O(int argc, char *p);
-void No_Flag_H(int argc, char *p);
-void Reg_memory();
+void Read_file(char **argv, int argc, int optind, options *flags); //чтение файла
+void Flags(char f, char **argv, options *flags);                   // выбор флага
+void pattern(char **argv, options *flags);
+void kolizz(FILE *fileop, int argc, char *p, options *flags); //функция отработки флагов
+void Flag_V(int argc, char *p, options *flags);
+void Flag_O(int argc, char *p, options *flags);
+void No_Flag_H(int argc, char *p, options *flags);
+void Reg_memory(options *flags);
+
 
 
 int reg_c;
@@ -35,16 +50,6 @@ size_t n_mat = 4;
 regmatch_t p_mat[4];
 char patt[9000] = {0}; //буфер для шаблона
 
-int flag_e = 0; // Шаблон
-int flag_i = 0; // Игнорирует различия регистра.
-int flag_v = 0; // Инвертирует смысл поиска соответствий.
-int flag_c = 0; // Выводит только количество совпадающих строк.
-int flag_l = 0; // Выводит только совпадающие файлы.
-int flag_n = 0; // Предваряет каждую строку вывода номером строки из файла ввода.
-int flag_h = 0; // Выводит совпадающие строки, не предваряя их именами файлов.
-int flag_s = 0; // Подавляет сообщения об ошибках о несуществующих или нечитаемых
-            // файлах.
-int flag_f = 0; // Получает регулярные выражения из файла.
-int flag_o = 0; // Печатает только совпадающие (непустые) части совпавшей строки.
+
 
 #endif // SRC_GREP_H_
