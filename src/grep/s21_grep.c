@@ -39,89 +39,109 @@ void Flags(char f, char **argv) {
     flag_s++;
     break;
   case 'f':
+    flag_f++;
     pattern(argv);
     break;
   case 'o':
     flag_o++;
     break;
-  default:
-    exit(1);
-  }
+  case '?':
+    default:
+      fprintf(stderr, "Флаг не найден\n");
+      exit(1);
+}
 }
 
 void Read_file(char **argv, int argc, int optind) {
   FILE *fileop;
   char *names;
-  while ((names = argv[optind]) != NULL) {
+  int i = optind;
+  while ((names = argv[i]) != NULL) {
+    // printf("dddddd\n");
     if (names != 0 || strcmp(names, "-") != 0) {
+      // printf("aaaaaa\n");
       if ((fileop = fopen(names, "r"))) {
+        // printf("bbbbbb\n");
         kolizz(fileop, argc, names);
+        // printf("ccccc1\n");
         fclose(fileop);
       } else {
-        if (!flag_s)
-          printf("Ошибка чтения");
+        if (!flag_s) {
+          perror("Ошибка чтения");
+          exit(1);
+        }
       }
     }
-    optind++;
+    i++;
   }
 }
 
 void pattern(char **argv) {
-  char buffer[7000] = {0};
+  // printf("1111231\n");
+  char buffer[9000] = {0};
   if (!flag_e && !flag_f) {
     snprintf(patt, sizeof(patt), "%s", argv[optind]);
     optind++;
   }
-  if (flag_e) {
-    if (!flag_f) {
+  if (flag_e && !flag_f) {
       if (patt[0] == 0) {
         snprintf(patt, sizeof(patt), "%s", optarg);
       } else {
         snprintf(buffer, sizeof(patt), "|%s", optarg);
         strcat(patt, buffer);
       }
-    }
   }
   if (flag_f) {
-    int k = 0;
+    // printf("1111111111\n");
     FILE *fileop_f;
     char *p = optarg;
-    char line_f[1000] = {0};
+    char line_f[1010] = {0};
     if (p != NULL) {
+      // printf("2222\n");
       if ((fileop_f = fopen(p, "r"))) {
+        // printf("3333\n");
         while ((fgets(line_f, 1000, fileop_f)) != NULL) {
+          // printf("4444\n");
           if (line_f[strlen(line_f) - 1] == 10) {
+            // printf("5555\n");
             line_f[strlen(line_f) - 1] = 0;
           }
           if (patt[0] == 0) {
+            // printf("66666\n");
             snprintf(patt, sizeof(patt), "%s", line_f);
           } else {
+            // printf("7777\n");
             snprintf(buffer, sizeof(patt), "|%s", line_f);
             strcat(patt, buffer);
           }
-          k++;
         }
-      } else if (!flag_s)
-        printf("Ошибка чтения");
+      } else {
+        if (!flag_s) {
+        perror("Ошибка чтения");
+        exit(1);
+      }
+      }
     }
   }
 }
 
 void kolizz(FILE *fileop, int argc, char *p) {
+ c_line = 0;
+ complete = 0;
+ complete_c = 0;
   Reg_memory(); 
   while (((re_ez = getline(&t_line, &line, fileop)) != EOF)) {
+    c_line++;
     if ((complete = regexec(&regex, t_line, n_mat, p_mat, 0)) == 0)
       complete_c++;
     if (t_line[strlen(t_line) - 1] == 10)
       (t_line[strlen(t_line) - 1] = 0);
-    if (complete == 0) {
-      if (!flag_v && !flag_c && !flag_l && !flag_o) {
-        if ((argc - optind) > 1 && !flag_h)
-          printf("%s:", p);
-        if (flag_n)
-          printf("%d:", c_line + 1);
-        printf("%s\n", t_line);
-      }
+    if (complete == 0 && !flag_v && !flag_c && !flag_l && !flag_o) {
+        No_Flag_H(argc, p);
+        if (flag_n) {
+          printf("%d:", c_line);
+        }
+      printf("%s\n", t_line);
     }
     if (flag_v) {
       Flag_V(argc, p);
@@ -129,7 +149,6 @@ void kolizz(FILE *fileop, int argc, char *p) {
     if (flag_o) {
       Flag_O(argc, p);
     }
-    c_line++;
   }
   if (!flag_v && flag_c && !flag_l) {
     No_Flag_H(argc, p);
@@ -137,7 +156,7 @@ void kolizz(FILE *fileop, int argc, char *p) {
   }
   if (flag_v && flag_c && !flag_l) {
     No_Flag_H(argc, p);
-    printf("%d\n", (c_line - complete_c));
+   printf("%d\n", (c_line - complete_c));
   }
   if (!flag_v && flag_c && flag_l) {
     No_Flag_H(argc, p);
@@ -163,11 +182,12 @@ void kolizz(FILE *fileop, int argc, char *p) {
 }
 
 void Flag_V(int argc, char *p) {
-  if (complete != 0 && flag_v && !flag_c && !flag_l && !flag_o) {
+  if (complete != 0 && flag_v && !flag_c && !flag_l) {
     No_Flag_H(argc, p);
-    if (flag_n)
-      printf("%d:", c_line + 1);
-    printf("%s\n", t_line);
+    if (flag_n) {
+      printf("%d:", c_line);
+    }
+   printf("%s\n", t_line);
   }
 }
 
@@ -175,7 +195,7 @@ void Flag_O(int argc, char *p) {
   if (complete == 0 && flag_o && !flag_v && !flag_c && !flag_l) {
     No_Flag_H(argc, p);
     if (flag_n)
-      printf("%d:", c_line + 1);
+      printf("%d:", c_line);
     char *t_line_o = t_line;
     for (unsigned int i = 0; i < strlen(t_line_o); i++) {
       if (regexec(&regex, t_line_o, n_mat, p_mat, 0))
@@ -202,7 +222,7 @@ void No_Flag_H(int argc, char *p) {
 }
 
 void Reg_memory() {
-  if (flag_i && !flag_e) {
+  if (flag_i) {
     if ((reg_c = regcomp(&regex, patt, REG_ICASE)) != 0) {
       printf("failed %d", reg_c);
       exit(1);

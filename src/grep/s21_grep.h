@@ -1,16 +1,14 @@
 #ifndef SRC_S21_CAT_H_
 #define SRC_S21_CAT_H_
 
-#define _GNU_SOURCE
-
-#include <getopt.h>
-#include <regex.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdlib.h>
+#include <getopt.h>
+#include <regex.h>
 
-const char *short_options = "e:ivclnhsf:o";
+const char *short_options = "e:ivclnhsf:o?";
 static struct option long_options[] = {
     {NULL, 0, NULL, 0},
 };
@@ -35,18 +33,18 @@ regex_t regex;
 size_t line = 1000;
 size_t n_mat = 4;
 regmatch_t p_mat[4];
+char patt[9000] = {0}; //буфер для шаблона
 
-char patt[7000] = {0}; //буфер для шаблона
-int flag_e;            // Шаблон
-int flag_i; // Игнорирует различия регистра.
-int flag_v; // Инвертирует смысл поиска соответствий.
-int flag_c; // Выводит только количество совпадающих строк.
-int flag_l; // Выводит только совпадающие файлы.
-int flag_n; // Предваряет каждую строку вывода номером строки из файла ввода.
-int flag_h; // Выводит совпадающие строки, не предваряя их именами файлов.
-int flag_s; // Подавляет сообщения об ошибках о несуществующих или нечитаемых
+int flag_e = 0; // Шаблон
+int flag_i = 0; // Игнорирует различия регистра.
+int flag_v = 0; // Инвертирует смысл поиска соответствий.
+int flag_c = 0; // Выводит только количество совпадающих строк.
+int flag_l = 0; // Выводит только совпадающие файлы.
+int flag_n = 0; // Предваряет каждую строку вывода номером строки из файла ввода.
+int flag_h = 0; // Выводит совпадающие строки, не предваряя их именами файлов.
+int flag_s = 0; // Подавляет сообщения об ошибках о несуществующих или нечитаемых
             // файлах.
-int flag_f; // Получает регулярные выражения из файла.
-int flag_o; // Печатает только совпадающие (непустые) части совпавшей строки.
+int flag_f = 0; // Получает регулярные выражения из файла.
+int flag_o = 0; // Печатает только совпадающие (непустые) части совпавшей строки.
 
 #endif // SRC_GREP_H_
