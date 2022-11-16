@@ -49,13 +49,14 @@ void Flags(char f, char **argv, options *flags, struct line_const tom) {
     flags->flag_o = 1;
     break;
   case '?':
-    default:
-      fprintf(stderr, "Флаг не найден\n");
-      exit(1);
-}
+  default:
+    fprintf(stderr, "Флаг не найден\n");
+    exit(1);
+  }
 }
 
-void Read_file(char **argv, int argc, int optind, options *flags, struct line_const tom) {
+void Read_file(char **argv, int argc, int optind, options *flags,
+               struct line_const tom) {
   FILE *fileop;
   char *names;
   int i = optind;
@@ -82,12 +83,12 @@ void pattern(char **argv, options *flags, struct line_const tom) {
     optind++;
   }
   if (flags->flag_e && !flags->flag_f) {
-      if (patt[0] == 0) {
-        snprintf(patt, sizeof(patt), "%s", optarg);
-      } else {
-        snprintf(buffer, sizeof(patt), "|%s", optarg);
-        strcat(patt, buffer);
-      }
+    if (patt[0] == 0) {
+      snprintf(patt, sizeof(patt), "%s", optarg);
+    } else {
+      snprintf(buffer, sizeof(patt), "|%s", optarg);
+      strcat(patt, buffer);
+    }
   }
   if (flags->flag_f) {
     FILE *fileop_f;
@@ -108,18 +109,19 @@ void pattern(char **argv, options *flags, struct line_const tom) {
         }
       } else {
         if (!flags->flag_s) {
-        perror("Ошибка чтения");
-        exit(1);
-      }
+          perror("Ошибка чтения");
+          exit(1);
+        }
       }
     }
   }
 }
 
-void kolizz(FILE *fileop, int argc, char *p, options *flags, struct line_const tom) {
-  
-  Reg_memory(flags, tom); 
-t_line = (char *) malloc(line + 1);
+void kolizz(FILE *fileop, int argc, char *p, options *flags,
+            struct line_const tom) {
+
+  Reg_memory(flags, tom);
+  t_line = (char *)malloc(line + 1);
   if (t_line == NULL) {
     exit(1);
   }
@@ -129,11 +131,12 @@ t_line = (char *) malloc(line + 1);
       tom.complete_c++;
     if (t_line[strlen(t_line) - 1] == 10)
       (t_line[strlen(t_line) - 1] = 0);
-    if (tom.complete == 0 && !flags->flag_v && !flags->flag_c && !flags->flag_l && !flags->flag_o) {
-        No_Flag_H(argc, p, flags);
-        if (flags->flag_n) {
-          printf("%d:", tom.c_line);
-        }
+    if (tom.complete == 0 && !flags->flag_v && !flags->flag_c &&
+        !flags->flag_l && !flags->flag_o) {
+      No_Flag_H(argc, p, flags);
+      if (flags->flag_n) {
+        printf("%d:", tom.c_line);
+      }
       printf("%s\n", t_line);
     }
     if (flags->flag_v) {
@@ -149,7 +152,7 @@ t_line = (char *) malloc(line + 1);
   }
   if (flags->flag_v && flags->flag_c && !flags->flag_l) {
     No_Flag_H(argc, p, flags);
-   printf("%d\n", (tom.c_line - tom.complete_c));
+    printf("%d\n", (tom.c_line - tom.complete_c));
   }
   if (!flags->flag_v && flags->flag_c && flags->flag_l) {
     No_Flag_H(argc, p, flags);
@@ -180,12 +183,13 @@ void Flag_V(int argc, char *p, options *flags, struct line_const tom) {
     if (flags->flag_n) {
       printf("%d:", tom.c_line);
     }
-   printf("%s\n", t_line);
+    printf("%s\n", t_line);
   }
 }
 
 void Flag_O(int argc, char *p, options *flags, struct line_const tom) {
-  if (tom.complete == 0 && flags->flag_o && !flags->flag_v && !flags->flag_c && !flags->flag_l) {
+  if (tom.complete == 0 && flags->flag_o && !flags->flag_v && !flags->flag_c &&
+      !flags->flag_l) {
     No_Flag_H(argc, p, flags);
     if (flags->flag_n)
       printf("%d:", tom.c_line);
@@ -194,8 +198,8 @@ void Flag_O(int argc, char *p, options *flags, struct line_const tom) {
       if (regexec(&regex, t_line_o, n_mat, p_mat, 0))
         break;
       unsigned int of = 0;
-      for (size_t k = 0; k <=n_mat; k++) {
-        if  (p_mat[k].rm_so == -1)
+      for (size_t k = 0; k <= n_mat; k++) {
+        if (p_mat[k].rm_so == -1)
           break;
         if (k == 0)
           of = p_mat[k].rm_eo;
@@ -210,7 +214,7 @@ void Flag_O(int argc, char *p, options *flags, struct line_const tom) {
 }
 
 void No_Flag_H(int argc, char *p, options *flags) {
-  if ((argc - optind) > 1 && !(flags -> flag_h))
+  if ((argc - optind) > 1 && !(flags->flag_h))
     printf("%s:", p);
 }
 
