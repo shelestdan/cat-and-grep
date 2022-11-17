@@ -1,40 +1,44 @@
 #include "s21_cat.h"
 
 int main(int argc, char *argv[]) {
-  while (testing == 0 && (fell = getopt_long(argc, argv, "+ETtensbv?",
-                                             long_options, NULL)) != EOF) {
-    opt(fell, argc);
+  int fell;
+  options flags = {0};
+  line names = {0, '0', 1, 0, 0, 0, 0, 1, 0};
+  while (names.testing == 0 &&
+         (fell = getopt_long(argc, argv, "+ETtensbv?", long_options, NULL)) !=
+             EOF) {
+    opt(fell, argc, &flags);
   }
-  read_file(argc, argv, optind);
+  read_file(argc, argv, optind, &flags, &names);
   return 0;
 }
 
-void opt(char fell, int argc) {
+void opt(char fell, int argc, options *flags) {
   if (argc != 1) {
     switch (fell) {
       case 'b':
-        b_flag = (n_flag = 0) + 1;
-        b_flag++;
+        flags->b_flag = (flags->n_flag = 0) + 1;
+        flags->b_flag = 1;
         break;
       case 'e':
       case 'E':
-        v_flag++;
-        e_flag++;
+        flags->v_flag = 1;
+        flags->e_flag = 1;
         break;
       case 'n':
-        n_flag = b_flag ? 0 : 1;
-        n_flag++;
+        flags->n_flag = flags->b_flag ? 0 : 1;
+        flags->n_flag = 1;
         break;
       case 's':
-        s_flag++;
+        flags->s_flag = 1;
         break;
       case 'v':
-        v_flag++;
+        flags->v_flag = 1;
         break;
       case 'T':
       case 't':
-        t_flag++;
-        v_flag++;
+        flags->t_flag = 1;
+        flags->v_flag = 1;
         break;
       case '?':
       default:
@@ -43,7 +47,7 @@ void opt(char fell, int argc) {
   }
 }
 
-void read_file(int argc, char **argv, int optind) {
+void read_file(int argc, char **argv, int optind, options *flags, line *names) {
   while (optind < argc) {
     FILE *fileop;
     int fileArg = optind;
@@ -51,99 +55,105 @@ void read_file(int argc, char **argv, int optind) {
       perror("File enum");
       exit(0);
     }
-    while ((symbol = getc(fileop)) != EOF) {
-      flag_start(symbol);
-      old_symbol = symbol;
-      numb_symbol++;
+    while ((names->symbol = getc(fileop)) != EOF) {
+      flag_start(flags, names);
+      names->old_symbol = names->symbol;
+      names->numb_symbol++;
     }
     optind++;
     fclose(fileop);
-    num = 1;
+    names->num = 1;
   }
 }
 
-void flag_start(char symbol) {
-  if (symbol == '\n') {
-    new_str = new_str + 1;
+void flag_start(options *flags, line *names) {
+  if (names->symbol == '\n') {
+    names->new_str = names->new_str + 1;
   }
-  if (s_flag) {
-    if (new_str == 1 && numb_symbol == 1) {
-      new_str = 2;
-      s_test = 1;
+  if (flags->s_flag) {
+    if (names->new_str == 1 && names->numb_symbol == 1) {
+      names->new_str = 2;
+      names->s_test = 1;
     }
-    if (new_str < 3) {
-      s_test = 1;
-      if (symbol != '\n') new_str = 0;
-    } else if (symbol != '\n') {
-      new_str = 0;
-      s_test = 1;
+    if (names->new_str < 3) {
+      names->s_test = 1;
+      if (names->symbol != '\n') names->new_str = 0;
+    } else if (names->symbol != '\n') {
+      names->new_str = 0;
+      names->s_test = 1;
     }
   }
-  if (n_flag && !b_flag) {
-    if ((old_symbol == '\n' || numb_symbol == 1) && !s_flag) {
-      printf("%6.d\t", num);
-      num++;
-    } else if (s_flag && (old_symbol == '\n' || numb_symbol == 1)) {
-      if (s_test) {
-        printf("%6.d\t", num);
-        num++;
+  if (flags->n_flag && !flags->b_flag) {
+    if ((names->old_symbol == '\n' || names->numb_symbol == 1) &&
+        !flags->s_flag) {
+      printf("%6.d\t", names->num);
+      names->num++;
+    } else if (flags->s_flag &&
+               (names->old_symbol == '\n' || names->numb_symbol == 1)) {
+      if (names->s_test) {
+        printf("%6.d\t", names->num);
+        names->num++;
       }
     }
   }
-  if (b_flag) {
-    if (!s_flag && (numb_symbol == 1 || old_symbol == '\n') && symbol != '\n') {
-      printf("%6.d\t", num);
-      num++;
+  if (flags->b_flag) {
+    if (!flags->s_flag &&
+        (names->numb_symbol == 1 || names->old_symbol == '\n') &&
+        names->symbol != '\n') {
+      printf("%6.d\t", names->num);
+      names->num++;
     }
-    if (s_flag && (old_symbol == '\n' || numb_symbol == 1)) {
-      if (symbol != '\n' && s_test) {
-        printf("%6.d\t", num);
-        num++;
+    if (flags->s_flag &&
+        (names->old_symbol == '\n' || names->numb_symbol == 1)) {
+      if (names->symbol != '\n' && names->s_test) {
+        printf("%6.d\t", names->num);
+        names->num++;
       }
     }
   }
-  if (e_flag) {
-    if (!s_flag && symbol == '\n') {
+  if (flags->e_flag) {
+    if (!flags->s_flag && names->symbol == '\n') {
       printf("$");
-    } else if (s_test && symbol == '\n') {
+    } else if (names->s_test && names->symbol == '\n') {
       printf("$");
     }
   }
 
-  if (t_flag) {
-    if (symbol == 9) t_test = 1;
+  if (flags->t_flag) {
+    if (names->symbol == 9) names->t_test = 1;
   }
 
-  if (v_flag) {
-    if (symbol >= 0 && symbol != 9 && symbol != 10 && symbol < 32) {
-      printf("^%c", symbol + 64);
-      v_test = 1;
-    } else if (symbol == 127) {
+  if (flags->v_flag) {
+    if (names->symbol >= 0 && names->symbol != 9 && names->symbol != 10 &&
+        names->symbol < 32) {
+      printf("^%c", names->symbol + 64);
+      names->v_test = 1;
+    } else if (names->symbol == 127) {
       printf("^?");
-      v_test = 1;
+      names->v_test = 1;
     }
   }
 
-  if (s_flag && s_test) {
-    if (t_test) {
+  if (flags->s_flag && names->s_test) {
+    if (names->t_test) {
       printf("^I");
-      s_test = 0;
-      t_test = 0;
-    } else if (v_test) {
-      v_test = 0;
+      names->s_test = 0;
+      names->t_test = 0;
+    } else if (names->v_test) {
+      names->v_test = 0;
     } else {
-      printf("%c", symbol);
-      s_test = 0;
+      printf("%c", names->symbol);
+      names->s_test = 0;
     }
-  } else if (!s_flag) {
-    if (t_test) {
+  } else if (!flags->s_flag) {
+    if (names->t_test) {
       printf("^");
       printf("I");
-      t_test = 0;
-    } else if (v_test) {
-      v_test = 0;
+      names->t_test = 0;
+    } else if (names->v_test) {
+      names->v_test = 0;
     } else {
-      printf("%c", symbol);
+      printf("%c", names->symbol);
     }
   }
 }
