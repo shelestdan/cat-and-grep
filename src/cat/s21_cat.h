@@ -36,6 +36,9 @@ static struct option long_options[] = {
 
 void opt(char fell, int argc, options *flags);
 void read_file(int argc, char **argv, int optind, options *flags, line *names);
-void flag_start(options *flags, line *names);
+void flag_start_s_n(options *flags, line *names);
+void flag_start_b_s_e(options *flags, line *names);
+void flag_start_s_v(options *flags, line *names);
+void fails(void);
 
 #endif  // SRC_S21_CAT_H_

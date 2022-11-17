@@ -13,6 +13,11 @@ int main(int argc, char *argv[]) {
   return 0;
 }
 
+void fails(void) {
+  perror("Fails fail\n");
+  exit(1);
+}
+
 void opt(char fell, int argc, options *flags) {
   if (argc != 1) {
     switch (fell) {
@@ -42,7 +47,7 @@ void opt(char fell, int argc, options *flags) {
         break;
       case '?':
       default:
-        exit(0);
+        fails();
     }
   }
 }
@@ -52,11 +57,12 @@ void read_file(int argc, char **argv, int optind, options *flags, line *names) {
     FILE *fileop;
     int fileArg = optind;
     if ((fileop = fopen(argv[fileArg], "r")) == NULL) {
-      perror("File enum");
-      exit(0);
+      fails();
     }
     while ((names->symbol = getc(fileop)) != EOF) {
-      flag_start(flags, names);
+      flag_start_s_n(flags, names);
+      flag_start_b_s_e(flags, names);
+      flag_start_s_v(flags, names);
       names->old_symbol = names->symbol;
       names->numb_symbol++;
     }
@@ -66,7 +72,7 @@ void read_file(int argc, char **argv, int optind, options *flags, line *names) {
   }
 }
 
-void flag_start(options *flags, line *names) {
+void flag_start_s_n(options *flags, line *names) {
   if (names->symbol == '\n') {
     names->new_str = names->new_str + 1;
   }
@@ -96,6 +102,9 @@ void flag_start(options *flags, line *names) {
       }
     }
   }
+}
+
+void flag_start_b_s_e(options *flags, line *names) {
   if (flags->b_flag) {
     if (!flags->s_flag &&
         (names->numb_symbol == 1 || names->old_symbol == '\n') &&
@@ -118,11 +127,12 @@ void flag_start(options *flags, line *names) {
       printf("$");
     }
   }
-
   if (flags->t_flag) {
     if (names->symbol == 9) names->t_test = 1;
   }
+}
 
+void flag_start_s_v(options *flags, line *names) {
   if (flags->v_flag) {
     if (names->symbol >= 0 && names->symbol != 9 && names->symbol != 10 &&
         names->symbol < 32) {
@@ -133,7 +143,6 @@ void flag_start(options *flags, line *names) {
       names->v_test = 1;
     }
   }
-
   if (flags->s_flag && names->s_test) {
     if (names->t_test) {
       printf("^I");
